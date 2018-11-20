@@ -38,12 +38,13 @@ class ViewController: UIViewController, UITextFieldDelegate, URLSessionDelegate 
     let kSignupOrSigninPolicy = "B2C_1_SUSI" // Your signup and sign-in policy you created in the portal
     let kEditProfilePolicy = "B2C_1_EDIT_PROFILE" // Your edit policy you created in the portal
     let kGraphURI = "https://fabrikamb2chello.azurewebsites.net/hello" // This is your backend API that you've configured to accept your app's tokens
-    // let kScopes: [String] = ["https://fabrikamb2c.onmicrosoft.com/helloapi/demo.read"] // This is a scope that you've configured your backend API to look for.
+ // let kScopes: [String] = ["https://fabrikamb2c.onmicrosoft.com/helloapi/demo.read"] // This is a scope that you've configured your backend API to look for.
     let kScopes: [String] = ["https://fabrikamb2c.onmicrosoft.com/demoapi/demo.read"] // This is a scope that you've configured your backend API to look for.
 
     // DO NOT CHANGE - This is the format of OIDC Token and Authorization endpoints for Azure AD B2C.
      // let kEndpoint = "https://login.microsoftonline.com/tfp/%@/%@"
-    let BaseAuthority = "https://login.microsoftonline.com/tfp/%@/%@/oauth2/v2.0/authorize"
+ // let BaseAuthority = "https://login.microsoftonline.com/tfp/%@/%@/oauth2/v2.0/authorize"
+    let BaseAuthority = "https://login.microsoftonline.com/tfp/%@/%@"
     
     var accessToken = String()
     
