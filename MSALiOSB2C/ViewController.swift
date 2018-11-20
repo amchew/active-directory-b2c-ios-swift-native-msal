@@ -32,18 +32,16 @@ import MSAL
 
 
 class ViewController: UIViewController, UITextFieldDelegate, URLSessionDelegate  {
-    
+   
     let kTenantName = "appcenterpoctmt.onmicrosoft.com" // Your tenant name
     let kClientID = "4858f689-78ee-4cba-87e2-48cd277f6fc9" // Your client ID from the portal when you created your application
     let kSignupOrSigninPolicy = "B2C_1_SUSI" // Your signup and sign-in policy you created in the portal
     let kEditProfilePolicy = "B2C_1_EDIT_PROFILE" // Your edit policy you created in the portal
-    let kGraphURI = "https://fabrikamb2chello.azurewebsites.net/hello" // This is your backend API that you've configured to accept your app's tokens
- // let kScopes: [String] = ["https://fabrikamb2c.onmicrosoft.com/helloapi/demo.read"] // This is a scope that you've configured your backend API to look for.
-    let kScopes: [String] = ["https://fabrikamb2c.onmicrosoft.com/demoapi/demo.read"] // This is a scope that you've configured your backend API to look for.
-
+    // let kGraphURI = "http://appcenterpoctmt.onmicrosoft.com/hello"
+    let kScopes: [String] = ["https://appcenterpoctmt.onmicrosoft.com/hello/user_impersonation"] // This is a scope that you've configured your backend API to look for.
+    let selectedSegmentIndexKey = "DatabaseTableViewController.selectedSegmentIndex"
     // DO NOT CHANGE - This is the format of OIDC Token and Authorization endpoints for Azure AD B2C.
-     // let kEndpoint = "https://login.microsoftonline.com/tfp/%@/%@"
- // let BaseAuthority = "https://login.microsoftonline.com/tfp/%@/%@/oauth2/v2.0/authorize"
+    let kGraphURI = "https://fabrikamb2chello.azurewebsites.net/hello" // This is your backend API that you've
     let BaseAuthority = "https://login.microsoftonline.com/tfp/%@/%@"
     
     var accessToken = String()
@@ -94,7 +92,7 @@ class ViewController: UIViewController, UITextFieldDelegate, URLSessionDelegate 
             */
         
             do {
-                let application = try MSALPublicClientApplication.init(clientId: kClientID, authority: kAuthority)
+                let application = try MSALPublicClientApplication.init(clientId: kClientID, keychainGroup: nil, authority: kAuthority)
                 
                 /**
                 Acquire a token for a new user using interactive authentication
