@@ -32,16 +32,17 @@ import MSAL
 
 
 class ViewController: UIViewController, UITextFieldDelegate, URLSessionDelegate  {
-    
-    let kTenantName = "fabrikamb2c.onmicrosoft.com" // Your tenant name
-    let kClientID = "90c0fe63-bcf2-44d5-8fb7-b8bbc0b29dc6" // Your client ID from the portal when you created your application
-    let kSignupOrSigninPolicy = "b2c_1_susi" // Your signup and sign-in policy you created in the portal
-    let kEditProfilePolicy = "b2c_1_edit_profile" // Your edit policy you created in the portal
-    let kGraphURI = "https://fabrikamb2chello.azurewebsites.net/hello" // This is your backend API that you've configured to accept your app's tokens
-    let kScopes: [String] = ["https://fabrikamb2c.onmicrosoft.com/demoapi/demo.read"] // This is a scope that you've configured your backend API to look for.
-
+   
+    let kTenantName = "appcenterpoctmt.onmicrosoft.com" // Your tenant name
+    let kClientID = "4858f689-78ee-4cba-87e2-48cd277f6fc9" // Your client ID from the portal when you created your application
+    let kSignupOrSigninPolicy = "B2C_1_SUSI" // Your signup and sign-in policy you created in the portal
+    let kEditProfilePolicy = "B2C_1_EDIT_PROFILE" // Your edit policy you created in the portal
+    // let kGraphURI = "http://appcenterpoctmt.onmicrosoft.com/hello"
+    let kScopes: [String] = ["https://appcenterpoctmt.onmicrosoft.com/hello/user_impersonation"] // This is a scope that you've configured your backend API to look for.
+    let selectedSegmentIndexKey = "DatabaseTableViewController.selectedSegmentIndex"
     // DO NOT CHANGE - This is the format of OIDC Token and Authorization endpoints for Azure AD B2C.
-    let kEndpoint = "https://login.microsoftonline.com/tfp/%@/%@"
+    let kGraphURI = "https://fabrikamb2chello.azurewebsites.net/hello" // This is your backend API that you've
+    let BaseAuthority = "https://login.microsoftonline.com/tfp/%@/%@"
     
     var accessToken = String()
     
@@ -71,54 +72,58 @@ class ViewController: UIViewController, UITextFieldDelegate, URLSessionDelegate 
          as the app is signing the user in.
         */
         
-        let kAuthority = String(format: kEndpoint, kTenantName, kSignupOrSigninPolicy)
-        
-        /**
-         
-         Initialize a MSALPublicClientApplication with a given clientID and authority
-         
-         - clientId:     The clientID of your application, you should get this from the app portal.
-         - authority:    A URL indicating a directory that MSAL can use to obtain tokens. In Azure B2C
-         it is of the form `https://<instance/tfp/<tenant>/<policy>`, where `<instance>` is the
-         directory host (e.g. https://login.microsoftonline.com), `<tenant>` is a
-         identifier within the directory itself (e.g. a domain associated to the
-         tenant, such as contoso.onmicrosoft.com), and `<policy>` is the policy you wish to
-         use for the current user flow.
-         - error:       The error that occurred creating the application object, if any, if you're
-         not interested in the specific error pass in nil.
-         
-         */
-        
         do {
-            let application = try MSALPublicClientApplication.init(clientId: kClientID, authority: kAuthority)
+            let kAuthority = try MSALAuthority(url: URL(string: String(format: BaseAuthority, kTenantName, kSignupOrSigninPolicy))!)
             
             /**
-             Acquire a token for a new user using interactive authentication
-             
-             - forScopes: Permissions you want included in the access token received
-             in the result in the completionBlock. Not all scopes are
-             gauranteed to be included in the access token returned.
-             - completionBlock: The completion block that will be called when the authentication
-             flow completes, or encounters an error.
-             */
-        
             
-            application.acquireToken(forScopes: kScopes) { (result, error) in
-                    if  error == nil {
-                        self.accessToken = (result?.accessToken)!
-                        self.loggingText.text = "Access token is \(self.accessToken)"
-                        self.signoutButton.isEnabled = true;
-                        self.callGraphApiButton.isEnabled = true;
-                        self.editProfileButton.isEnabled = true;
-                        self.refreshTokenButton.isEnabled = true;
-                        
-                        
-                    } else {
-                        self.loggingText.text = "Could not acquire token: \(error ?? "No error informarion" as! Error)"
-                    }
+            Initialize a MSALPublicClientApplication with a given clientID and authority
+            
+            - clientId:     The clientID of your application, you should get this from the app portal.
+            - authority:    A URL indicating a directory that MSAL can use to obtain tokens. In Azure B2C
+            it is of the form `https://<instance/tfp/<tenant>/<policy>`, where `<instance>` is the
+            directory host (e.g. https://login.microsoftonline.com), `<tenant>` is a
+            identifier within the directory itself (e.g. a domain associated to the
+            tenant, such as contoso.onmicrosoft.com), and `<policy>` is the policy you wish to
+            use for the current user flow.
+            - error:       The error that occurred creating the application object, if any, if you're
+            not interested in the specific error pass in nil.
+            
+            */
+        
+            do {
+                let application = try MSALPublicClientApplication.init(clientId: kClientID, keychainGroup: nil, authority: kAuthority)
+                
+                /**
+                Acquire a token for a new user using interactive authentication
+                
+                - forScopes: Permissions you want included in the access token received
+                in the result in the completionBlock. Not all scopes are
+                gauranteed to be included in the access token returned.
+                - completionBlock: The completion block that will be called when the authentication
+                flow completes, or encounters an error.
+                */
+            
+                
+                application.acquireToken(forScopes: kScopes) { (result, error) in
+                        if  error == nil {
+                            self.accessToken = (result?.accessToken)!
+                            self.loggingText.text = "Access token is \(self.accessToken)"
+                            self.signoutButton.isEnabled = true;
+                            self.callGraphApiButton.isEnabled = true;
+                            self.editProfileButton.isEnabled = true;
+                            self.refreshTokenButton.isEnabled = true;
+                            
+                            
+                        } else {
+                            self.loggingText.text = "Could not acquire token: \(error ?? "No error informarion" as! Error)"
+                        }
+                }
+            } catch {
+                self.loggingText.text = "Unable to create application \(error)"
             }
         } catch {
-            self.loggingText.text = "Unable to create application \(error)"
+            self.loggingText.text = "Unable to create MSALAuthority \(error)"
         }
     }
     
@@ -140,51 +145,55 @@ class ViewController: UIViewController, UITextFieldDelegate, URLSessionDelegate 
          you should not store the access token as it's of no use to you.
          */
 
-        let kAuthority = String(format: kEndpoint, kTenantName, kEditProfilePolicy)
-
         do {
-            
-            /**
-             
-             Initialize a MSALPublicClientApplication with a given clientID and authority
-             
-             - clientId:     The clientID of your application, you should get this from the app portal.
-             - authority:    A URL indicating a directory that MSAL can use to obtain tokens. In Azure B2C
-             it is of the form `https://<instance/tfp/<tenant>/<policy>`, where `<instance>` is the
-             directory host (e.g. https://login.microsoftonline.com), `<tenant>` is a
-             identifier within the directory itself (e.g. a domain associated to the
-             tenant, such as contoso.onmicrosoft.com), and `<policy>` is the policy you wish to
-             use for the current user flow.
-             - error:       The error that occurred creating the application object, if any, if you're
-             not interested in the specific error pass in nil.
-             
-             */
+            let kAuthority = try MSALAuthority(url: URL(string: String(format: BaseAuthority, kTenantName, kEditProfilePolicy))!)
 
-            let application = try MSALPublicClientApplication.init(clientId: kClientID, authority: kAuthority)
-            
-            /**
-             Acquire a token for a new user using interactive authentication
-             
-             - forScopes: Permissions you want included in the access token received
-             in the result in the completionBlock. Not all scopes are
-             gauranteed to be included in the access token returned.
-             - completionBlock: The completion block that will be called when the authentication
-             flow completes, or encounters an error.
-             */
-            
-            let thisUser = try self.getUserByPolicy(withUsers: application.users(), forPolicy: kEditProfilePolicy)
-            
-            application.acquireToken(forScopes: kScopes, user:thisUser ) { (result, error) in
-                    if error == nil {
-                        self.loggingText.text = "Successfully edited profile"
-                        
-                        
-                    } else {
-                        self.loggingText.text = "Could not edit profile: \(error ?? "No error informarion" as! Error)"
-                    }
+            do {
+                
+                /**
+                
+                Initialize a MSALPublicClientApplication with a given clientID and authority
+                
+                - clientId:     The clientID of your application, you should get this from the app portal.
+                - authority:    A URL indicating a directory that MSAL can use to obtain tokens. In Azure B2C
+                it is of the form `https://<instance/tfp/<tenant>/<policy>`, where `<instance>` is the
+                directory host (e.g. https://login.microsoftonline.com), `<tenant>` is a
+                identifier within the directory itself (e.g. a domain associated to the
+                tenant, such as contoso.onmicrosoft.com), and `<policy>` is the policy you wish to
+                use for the current user flow.
+                - error:       The error that occurred creating the application object, if any, if you're
+                not interested in the specific error pass in nil.
+                
+                */
+
+                let application = try MSALPublicClientApplication.init(clientId: kClientID, authority: kAuthority)
+                
+                /**
+                Acquire a token for a new user using interactive authentication
+                
+                - forScopes: Permissions you want included in the access token received
+                in the result in the completionBlock. Not all scopes are
+                gauranteed to be included in the access token returned.
+                - completionBlock: The completion block that will be called when the authentication
+                flow completes, or encounters an error.
+                */
+                
+                let thisUser = try self.getUserByPolicy(withUsers: application.allAccounts(), forPolicy: kEditProfilePolicy)
+                
+                application.acquireToken(forScopes: kScopes, account: thisUser ) { (result, error) in
+                        if error == nil {
+                            self.loggingText.text = "Successfully edited profile"
+                            
+                            
+                        } else {
+                            self.loggingText.text = "Could not edit profile: \(error ?? "No error informarion" as! Error)"
+                        }
+                }
+            } catch {
+                self.loggingText.text = "Unable to create application \(error)"
             }
         } catch {
-            self.loggingText.text = "Unable to create application \(error)"
+            self.loggingText.text = "Unable to create MSALAuthority \(error)"
         }
     }
 
@@ -208,56 +217,59 @@ class ViewController: UIViewController, UITextFieldDelegate, URLSessionDelegate 
          `AcquireTokenSilent()`. If you are experiencing that in your application, make
          sure you are using the cache correctly and using the same authority.
          */
-        
-        let kAuthority = String(format: kEndpoint, kTenantName, kSignupOrSigninPolicy)
-        
+
         do {
-            
-            let application = try MSALPublicClientApplication.init(clientId: kClientID, authority: kAuthority)
-            
-            /**
-             
-             Acquire a token for an existing user silently
-             
-             - forScopes: Permissions you want included in the access token received
-             in the result in the completionBlock. Not all scopes are
-             gauranteed to be included in the access token returned.
-             - User: A user object that we retrieved from the application object before that the
-             authentication flow will be locked down to.
-             - completionBlock: The completion block that will be called when the authentication
-             flow completes, or encounters an error.
-             */
-            
-            let thisUser = try self.getUserByPolicy(withUsers: application.users(), forPolicy: kSignupOrSigninPolicy)
-    
-            application.acquireTokenSilent(forScopes: kScopes, user: thisUser ) { (result, error) in
-                    if error == nil {
-                        self.accessToken = (result?.accessToken)!
-                        self.loggingText.text = "Refreshing token silently"
-                        self.loggingText.text = "Refreshed Access token is \(self.accessToken)"
-                        
-                    }  else if (error! as NSError).code == MSALErrorCode.interactionRequired.rawValue {
-                        
-                        // Notice we supply the user here. This ensures we acquire token for the same user
-                        // as we originally authenticated.
-                        
-                        application.acquireToken(forScopes: self.kScopes, user: thisUser) { (result, error) in
-                                if error == nil {
-                                    self.accessToken = (result?.accessToken)!
-                                    self.loggingText.text = "Access token is \(self.accessToken)"
-                                    
-                                } else  {
-                                    self.loggingText.text = "Could not acquire new token: \(error ?? "No error informarion" as! Error)"
-                                }
+            let kAuthority = try MSALAuthority(url: URL(string: String(format: BaseAuthority, kTenantName, kSignupOrSigninPolicy))!)
+        
+            do {
+                
+                let application = try MSALPublicClientApplication.init(clientId: kClientID, authority: kAuthority)
+                
+                /**
+                
+                Acquire a token for an existing user silently
+                
+                - forScopes: Permissions you want included in the access token received
+                in the result in the completionBlock. Not all scopes are
+                gauranteed to be included in the access token returned.
+                - User: A user object that we retrieved from the application object before that the
+                authentication flow will be locked down to.
+                - completionBlock: The completion block that will be called when the authentication
+                flow completes, or encounters an error.
+                */
+                
+                let thisUser = try self.getUserByPolicy(withUsers: application.allAccounts(), forPolicy: kSignupOrSigninPolicy)
+        
+                application.acquireTokenSilent(forScopes: kScopes, account: thisUser! ) { (result, error) in
+                        if error == nil {
+                            self.accessToken = (result?.accessToken)!
+                            self.loggingText.text = "Refreshing token silently"
+                            self.loggingText.text = "Refreshed Access token is \(self.accessToken)"
+                            
+                        }  else if (error! as NSError).code == MSALErrorCode.interactionRequired.rawValue {
+                            
+                            // Notice we supply the user here. This ensures we acquire token for the same user
+                            // as we originally authenticated.
+                            
+                            application.acquireToken(forScopes: self.kScopes, account: thisUser) { (result, error) in
+                                    if error == nil {
+                                        self.accessToken = (result?.accessToken)!
+                                        self.loggingText.text = "Access token is \(self.accessToken)"
+                                        
+                                    } else  {
+                                        self.loggingText.text = "Could not acquire new token: \(error ?? "No error informarion" as! Error)"
+                                    }
+                            }
+                        } else {
+                            self.loggingText.text = "Could not acquire token: \(error ?? "No error informarion" as! Error)"
                         }
-                    } else {
-                        self.loggingText.text = "Could not acquire token: \(error ?? "No error informarion" as! Error)"
-                    }
-            }
+                }
             } catch {
-            self.loggingText.text = "Unable to create application \(error)"
-            
+                self.loggingText.text = "Unable to create application \(error)"
             }
+        } catch {
+            self.loggingText.text = "Unable to create MSALAuthority \(error)"
+        }
     }
     
     @IBAction func callApi(_ sender: UIButton) {
@@ -298,44 +310,48 @@ class ViewController: UIViewController, UITextFieldDelegate, URLSessionDelegate 
          *as that is the policy we originally acquired the token with*. It is very important that all actions
          against a token acquired by a policy maintains the user of that policy on each call.
          */
-        
-         let kAuthority = String(format: kEndpoint, kTenantName, kSignupOrSigninPolicy)
-        
+
         do {
-            
-            /**
-             
-             Initialize a MSALPublicClientApplication with a given clientID and authority
-             
-             - clientId:     The clientID of your application, you should get this from the app portal.
-             - authority:    A URL indicating a directory that MSAL can use to obtain tokens. In Azure B2C
-             it is of the form `https://<instance/tfp/<tenant>/<policy>`, where `<instance>` is the
-             directory host (e.g. https://login.microsoftonline.com), `<tenant>` is a
-             identifier within the directory itself (e.g. a domain associated to the
-             tenant, such as contoso.onmicrosoft.com), and `<policy>` is the policy you wish to
-             use for the current user flow.
-             - error:       The error that occurred creating the application object, if any, if you're
-             not interested in the specific error pass in nil.
-             */
-            
-            let application = try MSALPublicClientApplication.init(clientId: kClientID, authority: kAuthority)
-            
-            /**
-             Removes all tokens from the cache for this application for the provided user
-             
-             - user:    The user to remove from the cache
-             */
-            
-            let thisUser = try self.getUserByPolicy(withUsers: application.users(), forPolicy: kSignupOrSigninPolicy)
-            
-            try application.remove(thisUser)
-            self.signoutButton.isEnabled = false;
-            self.callGraphApiButton.isEnabled = false;
-            self.editProfileButton.isEnabled = false;
-            self.refreshTokenButton.isEnabled = false;
-            
-        } catch  {
-            self.loggingText.text = "Received error signing user out: \(error)"
+            let kAuthority = try MSALAuthority(url: URL(string: String(format: BaseAuthority, kTenantName, kSignupOrSigninPolicy))!)
+        
+            do {
+                
+                /**
+                
+                Initialize a MSALPublicClientApplication with a given clientID and authority
+                
+                - clientId:     The clientID of your application, you should get this from the app portal.
+                - authority:    A URL indicating a directory that MSAL can use to obtain tokens. In Azure B2C
+                it is of the form `https://<instance/tfp/<tenant>/<policy>`, where `<instance>` is the
+                directory host (e.g. https://login.microsoftonline.com), `<tenant>` is a
+                identifier within the directory itself (e.g. a domain associated to the
+                tenant, such as contoso.onmicrosoft.com), and `<policy>` is the policy you wish to
+                use for the current user flow.
+                - error:       The error that occurred creating the application object, if any, if you're
+                not interested in the specific error pass in nil.
+                */
+                
+                let application = try MSALPublicClientApplication.init(clientId: kClientID, authority: kAuthority)
+                
+                /**
+                Removes all tokens from the cache for this application for the provided user
+                
+                - user:    The user to remove from the cache
+                */
+                
+                let thisUser = try self.getUserByPolicy(withUsers: application.allAccounts(), forPolicy: kSignupOrSigninPolicy)
+                
+                try application.remove(thisUser!)
+                self.signoutButton.isEnabled = false;
+                self.callGraphApiButton.isEnabled = false;
+                self.editProfileButton.isEnabled = false;
+                self.refreshTokenButton.isEnabled = false;
+                
+            } catch  {
+                self.loggingText.text = "Received error signing user out: \(error)"
+            }
+        } catch {
+            self.loggingText.text = "Unable to create MSALAuthority \(error)"
         }
     }
 
@@ -363,10 +379,10 @@ class ViewController: UIViewController, UITextFieldDelegate, URLSessionDelegate 
         }
     }
     
-    func getUserByPolicy (withUsers: [MSALUser], forPolicy: String) throws -> MSALUser? {
+    func getUserByPolicy (withUsers: [MSALAccount], forPolicy: String) throws -> MSALAccount? {
         
         for user in withUsers {
-            if (user.userIdentifier().components(separatedBy: ".")[0].hasSuffix(forPolicy.lowercased())) {
+            if (user.homeAccountId?.objectId?.components(separatedBy: ".")[0].hasSuffix(forPolicy.lowercased()) ?? false) {
                 return user
             }
     }
