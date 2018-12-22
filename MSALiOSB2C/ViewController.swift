@@ -33,12 +33,12 @@ import MSAL
 
 class ViewController: UIViewController, UITextFieldDelegate, URLSessionDelegate  {
     
-    let kTenantName = "fabrikamb2c.onmicrosoft.com" // Your tenant name
-    let kClientID = "90c0fe63-bcf2-44d5-8fb7-b8bbc0b29dc6" // Your client ID from the portal when you created your application
+    let kTenantName = "AmandaIdentity.onmicrosoft.com" // Your tenant name
+    let kClientID = "ca69e3ca-2c6e-482b-b02f-4c78158b7325" // Your client ID from the portal when you created your application
     let kSignupOrSigninPolicy = "b2c_1_susi" // Your signup and sign-in policy you created in the portal
     let kEditProfilePolicy = "b2c_1_edit_profile" // Your edit policy you created in the portal
     let kGraphURI = "https://fabrikamb2chello.azurewebsites.net/hello" // This is your backend API that you've configured to accept your app's tokens
-    let kScopes: [String] = ["https://fabrikamb2c.onmicrosoft.com/demoapi/demo.read"] // This is a scope that you've configured your backend API to look for.
+    let kScopes: [String] = ["https://AmandaIdentity.onmicrosoft.com/amandaIdentity/user_impersonation"] // This is a scope that you've configured your backend API to look for.
 
     // DO NOT CHANGE - This is the format of OIDC Token and Authorization endpoints for Azure AD B2C.
     let kEndpoint = "https://login.microsoftonline.com/tfp/%@/%@"
